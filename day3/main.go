@@ -8,19 +8,17 @@ import (
 )
 
 func main() {
-	part1()
+	part2()
 }
 
-
-
+const MAXCOLUMN = 12
 func part1() {
 	lines, err := getLines("/Users/david.payne/personal/2021-advent-code/day3/input.txt")
 	if err != nil {
 		panic("error")
 	}
 
-
-	lineLength := 12
+	lineLength := MAXCOLUMN
 	counts := make([]int, lineLength)
 	for _, line := range lines {
 		for j := 0; j < lineLength; j++ {
@@ -56,16 +54,95 @@ func part1() {
 
 
 
-//func part2(){
-//	lines, err := getLines("/Users/david.payne/personal/2021-advent-code/day2/input.txt")
-//	if err != nil {
-//		panic("error")
-//
-//	}
-//
-//
-//}
-//
+func part2(){
+	lines, err := getLines("/Users/david.payne/personal/2021-advent-code/day3/input.txt")
+	if err != nil {
+		panic("error")
+
+	}
+
+	values := make([]uint,len(lines))
+	for i, line := range lines {
+		values[i] = convertToByteSlice(line)
+	}
+
+	most := filterListColumn(true, values)
+	fmt.Printf("most common: %0b\n", most)
+	fmt.Printf("most common: %d\n", most)
+	least := filterListColumn(false, values)
+	fmt.Printf("least common: %0b\n", least)
+	fmt.Printf("least common: %d\n", least)
+
+	7928162
+}
+
+func filterListColumn(mostCommon bool, list []uint)uint {
+	currentColumn := 0
+	currentList := list
+	for ; len(currentList) > 1;{
+		var finderBit uint
+		if mostCommon {
+			finderBit = findMostCommonBit(currentColumn, currentList)
+		} else {
+			finderBit = findLeastCommonBit(currentColumn, currentList)
+		}
+		currentList = filterList(currentColumn, finderBit, currentList)
+		currentColumn++
+	}
+
+	return currentList[0]
+}
+
+func filterList(column int, match uint, list []uint)[]uint {
+	result := []uint{}
+	shiftDistance := (MAXCOLUMN - column - 1) // correct. creates a bitmask at
+	bitmask := uint(1) << shiftDistance
+	match = match << shiftDistance
+	for _, line := range list {
+		if (line & bitmask) == match {
+			result = append(result, line)
+		}
+	}
+	return result
+}
+
+
+func findLeastCommonBit(column int, lines []uint) uint {
+	if uint(1) == findMostCommonBit(column,lines) {
+		return uint(0)
+	} else {
+		return uint(1)
+	}
+}
+
+// findMostCommonBit finds the most common bit from the left either a 0 or 1
+func findMostCommonBit(column int, lines []uint) uint {
+	bitmask := uint(1) << (MAXCOLUMN - column - 1)
+	countOfZeros := 0
+	for i := 0; i < len(lines); i++ {
+		if bitmask & lines[i] == uint(0) {
+			countOfZeros++
+		}
+	}
+	if  countOfZeros > len(lines) / 2 {
+		return uint(0)
+	} else {
+		return uint(1)
+	}
+}
+
+
+func convertToByteSlice(line string)uint {
+	value := uint(0)
+
+	for j := 0; j < len(line); j++ {
+		value = value << 1
+		if line[j] ==  '1' {
+			value = value + 1
+		}
+	}
+	return value
+}
 
 
 func getLines(fileName string) ([]string, error) {
