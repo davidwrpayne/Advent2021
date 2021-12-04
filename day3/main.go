@@ -73,7 +73,6 @@ func part2(){
 	fmt.Printf("least common: %0b\n", least)
 	fmt.Printf("least common: %d\n", least)
 
-	7928162
 }
 
 func filterListColumn(mostCommon bool, list []uint)uint {
