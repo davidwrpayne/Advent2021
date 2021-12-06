@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	part1()
+	part2()
 }
 
 func part1() {
@@ -40,6 +40,41 @@ func part1() {
 	}
 }
 
+func part2() {
+	lines, err := getLines("./day4/input.txt")
+	if err != nil {
+		panic(err)
+	}
+
+	firstLineNumbers, lines := lines[0], lines[1:]
+	numbersCalled := convertLine(firstLineNumbers, ",", 30000)
+	boards := readBoards(lines)
+	numberOfWonBoards := 0
+	for idx, number := range numbersCalled {
+		fmt.Printf("calling index: %v num: %v\n",idx, number)
+		for i, b := range boards {
+			if (!b.winningBoard()) {
+				b.markNumber(number)
+				if b.winningBoard() {
+					numberOfWonBoards++ //
+					if numberOfWonBoards == len(boards) {
+						fmt.Printf("last winning board %v index %v", b.ScoredNumbers, i)
+						fmt.Printf("score of winning %v", b.score(number))
+						return
+					}
+
+				}
+			}
+		}
+	}
+}
+
+//22<68 41< 2 58
+//69<76<14<62 33
+//64 39<46<28 59
+//60 21 26<13 74
+//12 54 99<82< 0<
+//12 + 54 + 60 + 21 + 74 + 59 + 64 +28+33+58 + 2+68
 //const REGEX = "\\s+" //multiple whitespaces
 func readBoards(input []string) []*BingoBoard {
 	bingoBoards := []*BingoBoard{}
