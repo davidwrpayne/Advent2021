@@ -14,7 +14,7 @@ func main() {
 }
 
 func part1() {
-	lines, err := ReadFile("day11/test_input.txt")
+	lines, err := ReadFile("day11/input.txt")
 	if err != nil {
 		panic("failed to read input file")
 	}
@@ -33,15 +33,17 @@ func part1() {
 		}
 	}
 
-	b.PrintBoard()
-	fmt.Printf("\n\n")
-	b = stepMap(b)
-	b.PrintBoard()
-	fmt.Printf("\n\n")
-	b = stepMap(b)
-	b.PrintBoard()
-	fmt.Printf("\n\n")
+	//totalFlashes := 0
+	var i int
+	for i = 1; i <= 300; i++ {
+		flashes := b.stepMap()
+		if b.YSize * b.XSize <= flashes {
+			fmt.Printf("all flashed on %d", i)
+		}
+	}
+	//fmt.Printf("after %d stesp %d flashes \n", i, totalFlashes)
 }
+
 type Board struct {
 	Map [][]int
 	XSize int
@@ -70,51 +72,71 @@ func (b *Board)PrintBoard() {
 	}
 }
 
-func stepMap(b *Board) *Board {
-	newBoard := NewBoard(b.XSize,b.YSize)
+func (b *Board)stepMap() int {
+
+	flashing := []*Point{}
 	for x := 0; x < b.XSize; x++ {
 		for y := 0; y < b.YSize; y++ {
-			newValue := b.Map[x][y] + 1
-			newBoard.Map[x][y] = newValue
-		}
-	}
-	flashNeighbors(b)
-	for x := 0; x < b.XSize; x++ {
-		for y := 0; y < b.YSize; y++ {
-			if newBoard.Map[x][y] > 9 {
-				newBoard.Map[x][y] = 0
+			b.Map[x][y] += 1
+			if b.Map[x][y] == 10 {
+				flashing = append(flashing, NewPoint(x,y))
 			}
 		}
 	}
-	return newBoard
-}
+	for len(flashing) > 0 {
+		element := len(flashing) - 1
+		flasher := flashing[element]
+		flashing = flashing[:element]
 
-func flashNeighbors(board *Board) {
-	for x := 0; x < board.XSize; x ++ {
-		for y := 0; y < board.YSize; y ++ {
-			if board.Map[x][y] > 9 {
-				neighbors := [][2]int{
-					{x-1,y-1},
-					{x-1,y},
-					{x-1,y+1},
-					{x,y-1},
-					//{x,y}, ignore center
-					{x,y+1},
-					{x+1,y-1},
-					{x+1,y},
-					{x+1,y+1},
-				}
-				for _, n := range neighbors {
-					if n[0] < 0 || n[1] < 0 || n[0] >= board.XSize || n[1] >= board.YSize {
-						continue
-					}
-					board.Map[n[0]][n[1]] += 1
-				}
+		neighbors := getNeighbors(flasher)
+		for _, n := range neighbors {
+			if n.x() < 0 || n.y() < 0 || n.x() >= b.XSize || n.y() >= b.YSize {
+				continue
+			}
+			b.Map[n.x()][n.y()] += 1
+			if b.Map[n.x()][n.y()] == 10 {
+				flashing = append(flashing, NewPoint(n.x(), n.y()))
 			}
 		}
 	}
+	countOfFlashes := 0
+	for x := 0; x < b.XSize; x++ {
+		for y := 0; y < b.YSize; y++ {
+			if b.Map[x][y] >= 10 {
+				b.Map[x][y] = 0
+				countOfFlashes += 1
+			}
+		}
+	}
+	return countOfFlashes
 }
 
+func NewPoint(x,y int) *Point {
+	return &Point{x,y}
+}
+
+type Point [2]int
+
+func (p *Point)x()int {
+	return p[0]
+}
+
+func (p *Point)y()int {
+	return p[1]
+}
+
+func getNeighbors(p *Point) []*Point {
+	return []*Point{
+		NewPoint(p.x() - 1, p.y() - 1),
+		NewPoint(p.x() - 1, p.y()),
+		NewPoint(p.x() - 1, p.y() + 1),
+		NewPoint(p.x(), p.y() - 1),
+		NewPoint(p.x(), p.y() + 1),
+		NewPoint(p.x() + 1, p.y() - 1),
+		NewPoint(p.x() + 1, p.y()),
+		NewPoint(p.x() + 1, p.y() + 1),
+	}
+}
 
 func ReadFile(s string) ([]string, error) {
 	lines := []string{}
