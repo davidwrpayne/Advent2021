@@ -102,7 +102,7 @@ func part2() {
 
 func (b *Board) printBoard() {
 	fmt.Printf("\n\n")
-	for x := 0; x < len(b.Points); x++ {
+	for x := len(b.Points) - 1; x >= 0; x-- {
 		for y:=0; y < len(b.Points[0]); y++ {
 			if b.Points[x][y] {
 				fmt.Printf("#")
@@ -188,7 +188,7 @@ func foldVertical(board *Board, number int) *Board {
 func foldHorizontal(board *Board, number int) *Board{
 	newPointList := []*Point{} // dont know the size of the slice yet
 	for _, point := range board.PointList {
-		if point.y() <= number { // point is above the line
+		if point.y() < number { // point is above the line
 			// point remains where it is
 			newPointList = append(newPointList, point)
 		} else { // point is below the line
